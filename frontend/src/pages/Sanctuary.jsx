@@ -51,7 +51,7 @@ function Sanctuary() {
                                     <span><Users size={14} /> {s.visitors}</span>
                                     <span><Star size={14} /> {s.difficulty}</span>
                                 </div>
-                                <Link to="/planner" className="explore-btn full-width">Plan Visit</Link>
+                                <Link to={`/planner?dest=${encodeURIComponent(s.name)}`} className="explore-btn full-width">Plan Visit</Link>
                             </div>
                         </div>
                     ))}

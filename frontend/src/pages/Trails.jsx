@@ -63,7 +63,7 @@ function Trails() {
                                 </div>
                                 <div className="destination-footer">
                                     <span className="destination-price">From <strong>{d.price}</strong></span>
-                                    <Link to="/planner" className="explore-btn">Explore <ArrowRight size={14} /></Link>
+                                    <Link to={`/planner?dest=${encodeURIComponent(d.name)}`} className="explore-btn">Explore <ArrowRight size={14} /></Link>
                                 </div>
                             </div>
                         </div>
