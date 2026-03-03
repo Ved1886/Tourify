@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bird, MapPin, Clock, Eye, Search, Loader } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
 const statusColors = {
     'Endangered': '#f59e0b',

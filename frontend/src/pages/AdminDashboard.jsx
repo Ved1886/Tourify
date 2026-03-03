@@ -7,7 +7,7 @@ import {
     Loader, TrendingUp, Eye, Trash2, BarChart3, Settings
 } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
 function AdminDashboard() {
     const { user, token, logout } = useAuth();

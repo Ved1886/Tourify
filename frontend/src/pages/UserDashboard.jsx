@@ -7,7 +7,7 @@ import {
     Loader, ArrowRight, TrendingUp, Heart, Award
 } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
 function UserDashboard() {
     const { user, token, logout } = useAuth();

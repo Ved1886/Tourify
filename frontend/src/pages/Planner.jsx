@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Sparkles, Loader, ArrowRight, Zap, Shield, Eye, Target, ChevronRight } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
 const features = [
     { icon: <Sparkles />, title: 'AI Trail Generator', desc: 'Our AI analyzes terrain, weather patterns, and biodiversity to craft your perfect nature escape with zero-carbon routing.' },

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Star, Heart, ArrowRight, Loader } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
 function Trails() {
     const [destinations, setDestinations] = useState([]);
