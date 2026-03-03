@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Star, Heart, ArrowRight, Loader } from 'lucide-react';
+import { MapPin, Star, Heart, ArrowRight, Loader, Utensils, Activity, Eye, X } from 'lucide-react';
+
 
 const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
@@ -9,6 +10,7 @@ function Trails() {
     const [destinations, setDestinations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [liked, setLiked] = useState([]);
+    const [selectedDest, setSelectedDest] = useState(null);
 
     useEffect(() => {
         const fetch = async () => {
@@ -63,11 +65,55 @@ function Trails() {
                                 </div>
                                 <div className="destination-footer">
                                     <span className="destination-price">From <strong>{d.price}</strong></span>
-                                    <Link to={`/planner?dest=${encodeURIComponent(d.name)}`} className="explore-btn">Explore <ArrowRight size={14} /></Link>
+                                    <button onClick={() => setSelectedDest(d)} className="explore-btn" style={{ border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Explore <ArrowRight size={14} /></button>
                                 </div>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {selectedDest && (
+                <div className="modal-overlay" onClick={() => setSelectedDest(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+                        <button className="close-btn" onClick={() => setSelectedDest(null)} style={{ position: 'absolute', right: '15px', top: '15px', background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                            <X size={24} />
+                        </button>
+
+                        <div style={{ background: selectedDest.gradient, padding: '40px 20px', borderRadius: '16px 16px 0 0', marginTop: '-30px', marginLeft: '-30px', marginRight: '-30px', marginBottom: '20px', textAlign: 'center' }}>
+                            <h2 style={{ margin: 0, fontSize: '2rem', color: '#fff' }}>{selectedDest.name}</h2>
+                            <p style={{ margin: '10px 0 0', color: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                                <MapPin size={16} /> {selectedDest.country}
+                            </p>
+                        </div>
+
+                        <div style={{ color: '#fff', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#0de381', fontSize: '1.2rem', margin: 0 }}><Utensils size={20} /> Famous Food</h3>
+                                <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0, color: '#ccc' }}>
+                                    Experience authentic local cuisine. From traditional street food to hidden eco-cafes, {selectedDest.name} offers a rich palette of organic and sustainably sourced meals unique to {selectedDest.country}.
+                                </p>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#0de381', fontSize: '1.2rem', margin: 0 }}><Activity size={20} /> Popular Activities</h3>
+                                <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0, color: '#ccc' }}>
+                                    Engage in guided wildlife safaris, eco-friendly trailing, native community interactions, and conservation workshops taking place around the {selectedDest.tag} region.
+                                </p>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.05)', padding: '15px', borderRadius: '12px' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#0de381', fontSize: '1.2rem', margin: 0 }}><Eye size={20} /> Scenic Viewpoints</h3>
+                                <p style={{ fontSize: '14px', lineHeight: '1.6', margin: 0, color: '#ccc' }}>
+                                    Hike up to hidden observation decks or natural peaks that give you breathtaking, panoramic views of the untouched landscapes of {selectedDest.name}.
+                                </p>
+                            </div>
+
+                            <Link to={`/planner?dest=${encodeURIComponent(selectedDest.name)}`} style={{ background: '#0de381', color: '#000', padding: '14px', borderRadius: '12px', textAlign: 'center', fontWeight: 'bold', textDecoration: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+                                Plan Your Trip <ArrowRight size={18} />
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
