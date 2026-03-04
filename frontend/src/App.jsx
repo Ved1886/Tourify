@@ -15,6 +15,8 @@ import Sanctuary from './pages/Sanctuary.jsx';
 import Tribe from './pages/Tribe.jsx';
 import Wildlife from './pages/Wildlife.jsx';
 import Log from './pages/Log.jsx';
+import MapPage from './pages/MapPage.jsx';
+import BestTime from './pages/BestTime.jsx';
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
@@ -63,8 +65,14 @@ function App() {
                         <Link to="/planner" className={`nav-item ${location.pathname === '/planner' ? 'active' : ''}`} onClick={closeMenu}>
                             <Compass /> AI Planner
                         </Link>
+                        <Link to="/best-time" className={`nav-item ${location.pathname === '/best-time' ? 'active' : ''}`} onClick={closeMenu}>
+                            Best Time
+                        </Link>
+                        <Link to="/map" className={`nav-item ${location.pathname === '/map' ? 'active' : ''}`} onClick={closeMenu}>
+                            <Map /> Map
+                        </Link>
                         <Link to="/trails" className={`nav-item ${location.pathname === '/trails' ? 'active' : ''}`} onClick={closeMenu}>
-                            <Map /> Trails
+                            Trails
                         </Link>
                         <Link to="/nature-guard" className={`nav-item ${location.pathname === '/nature-guard' ? 'active' : ''}`} onClick={closeMenu}>
                             <Shield /> Nature Guard
@@ -128,6 +136,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/planner" element={<Planner />} />
+                <Route path="/best-time" element={<BestTime />} />
+                <Route path="/map" element={<MapPage />} />
                 <Route path="/trails" element={<Trails />} />
                 <Route path="/nature-guard" element={<NatureGuard />} />
                 <Route path="/sanctuary" element={<Sanctuary />} />
