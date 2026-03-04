@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-1.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
 const SYSTEM_INSTRUCTION = `You are Tourify AI, an expert nature travel assistant for Tourify.ai — a platform dedicated to eco-friendly, sustainable nature travel. 
