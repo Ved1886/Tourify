@@ -72,13 +72,11 @@ export default function Wildlife() {
 
             // Wait a sec for user to read fact
             await fetchWildlife();
+            setShowModal(false);
+            setForm({ species: '', location: '', status: 'Least Concern' });
+            setAiFact('');
+            setSubmitting(false);
 
-            setTimeout(() => {
-                setShowModal(false);
-                setForm({ species: '', location: '', status: 'Least Concern' });
-                setAiFact('');
-                setSubmitting(false);
-            }, 3500);
 
         } catch (err) {
             console.error(err);
@@ -126,7 +124,7 @@ export default function Wildlife() {
                             <div className="wildlife-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                 <div className="wildlife-top">
                                     <h3>{w.species}</h3>
-                                    <span className={`status-badge status-${(w.status || '').toLowerCase().replace(/\\s/g, '-')}`}>
+                                    <span className={`status-badge status-${(w.status || '').toLowerCase().replace(/\s/g, '-')}`}>
                                         {w.status}
                                     </span>
                                 </div>

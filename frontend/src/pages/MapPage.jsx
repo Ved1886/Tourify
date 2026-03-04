@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import { Map, Loader, Users, MapPin, Search } from 'lucide-react';
 
 const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
@@ -50,6 +50,7 @@ let tripIcon = null;
 let destIcon = null;
 
 const initializeIcons = () => {
+    if (!L || !L.Icon) return;
     if (!tripIcon) {
         tripIcon = new L.Icon({
             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
