@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Loader, ArrowRight, Zap, Shield, Eye, Target, ChevronRight, Calendar, MapPin, Leaf, CheckCircle } from 'lucide-react';
+import { Sparkles, Loader, ArrowRight, Zap, Shield, Eye, Target, ChevronRight, Calendar, MapPin, Leaf, CheckCircle, Receipt, Download, X, IndianRupee } from 'lucide-react';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -22,6 +22,7 @@ function Planner() {
     const [formData, setFormData] = useState({
         destination: '', startDate: '', endDate: '', notes: ''
     });
+    const [showBill, setShowBill] = useState(false);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -43,23 +44,41 @@ function Planner() {
         const d1 = new Date(start);
         const d2 = new Date(end);
         let days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
-        if (days < 1 || isNaN(days)) days = 3; // Default to 3 days if invalid
-        if (days > 7) days = 7; // Cap at 7 for simulation
+        if (days < 1 || isNaN(days)) days = 3;
+        if (days > 10) days = 10;
 
         const itinerary = [];
+        const basePricePerDay = Math.floor(Math.random() * 5000 + 8000);
+
         for (let i = 1; i <= days; i++) {
+            const currentDate = new Date(d1);
+            currentDate.setDate(d1.getDate() + (i - 1));
+            const dateStr = currentDate.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+
             itinerary.push({
                 day: i,
+                date: dateStr,
                 title: i === 1 ? `Arrival & Acclimatization at ${targetDestination}` :
                     i === days ? `Final Sunrise Trek & Departure` :
                         `Deep Exploration & Wildlife Tracking (Zone ${String.fromCharCode(64 + i)})`,
-                desc: i === 1 ? `Arrive at the base camp eco-lodge. Orientation on local conservation rules and a light evening walk to adjust to the climate.` :
+                desc: i === 1 ? `Arrive at the base camp eco-lodge at ${targetDestination}. Orientation on local conservation rules and a light evening walk to adjust to the climate.` :
                     i === days ? `Early morning hike to a high altitude viewpoint. Final photography session and zero-carbon transport back to the transit hub.` :
                         `A guided 4-hour trek through ancient forest corridors with a local naturalist. Expected sightings of native flora and rare endemic birds. Evening community-led stargazing.`,
-                ecoImpact: `${Math.floor(Math.random() * 5 + 2)}kg CO2 Offset`
+                ecoImpact: `${Math.floor(Math.random() * 5 + 2)}kg CO2 Offset`,
+                cost: basePricePerDay + Math.floor(Math.random() * 3000)
             });
         }
-        return itinerary;
+        return itneraryResult(itinerary);
+    };
+
+    const itneraryResult = (plan) => {
+        const totalCost = plan.reduce((sum, day) => sum + day.cost, 0);
+        return {
+            steps: plan,
+            totalCost: totalCost,
+            tax: Math.floor(totalCost * 0.18), // 18% GST
+            grandTotal: Math.floor(totalCost * 1.18)
+        };
     };
 
     const handleSubmit = async (e) => {
@@ -87,24 +106,29 @@ function Planner() {
                 const response = await axios.post(`${API}/trips`, formData);
 
                 // Generate and show plan
-                const plan = generateSimulatedPlan(formData.destination, formData.startDate, formData.endDate);
+                const planResult = generateSimulatedPlan(formData.destination, formData.startDate, formData.endDate);
                 setGeneratedPlan({
                     destination: formData.destination,
                     dates: `${formData.startDate} to ${formData.endDate}`,
                     id: response.data._id || Math.random().toString(36).substring(7),
-                    itinerary: plan
+                    itinerary: planResult.steps,
+                    totalCost: planResult.totalCost,
+                    tax: planResult.tax,
+                    grandTotal: planResult.grandTotal
                 });
                 setSaved(true);
             } catch (err) {
                 console.error(err);
                 alert('Connection error but generating preview anyway!');
-                // Generate plan anyway if backend fails for demo purposes
-                const plan = generateSimulatedPlan(formData.destination, formData.startDate, formData.endDate);
+                const planResult = generateSimulatedPlan(formData.destination, formData.startDate, formData.endDate);
                 setGeneratedPlan({
                     destination: formData.destination,
                     dates: `${formData.startDate} to ${formData.endDate}`,
                     id: 'preview_only',
-                    itinerary: plan
+                    itinerary: planResult.steps,
+                    totalCost: planResult.totalCost,
+                    tax: planResult.tax,
+                    grandTotal: planResult.grandTotal
                 });
             } finally {
                 setLoading(false);
@@ -187,22 +211,108 @@ function Planner() {
                             <div className="ai-itinerary">
                                 {generatedPlan.itinerary.map((day, idx) => (
                                     <div key={idx} className="itinerary-day">
-                                        <div className="day-number">Day {day.day}</div>
+                                        <div className="day-info">
+                                            <div className="day-number">Day {day.day}</div>
+                                            <div className="day-date">{day.date}</div>
+                                        </div>
                                         <div className="day-content">
                                             <h4>{day.title}</h4>
                                             <p>{day.desc}</p>
-                                            <span className="eco-tag"><Leaf size={12} /> {day.ecoImpact}</span>
+                                            <div className="day-footer">
+                                                <span className="eco-tag"><Leaf size={12} /> {day.ecoImpact}</span>
+                                                <span className="cost-tag"><IndianRupee size={12} /> {day.cost.toLocaleString('en-IN')}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <button onClick={resetPlanner} className="submit-form-btn reset-btn">
-                                <Zap size={18} /> Plan Another Trip
-                            </button>
+                            <div className="planner-actions">
+                                <button onClick={() => setShowBill(true)} className="bill-btn">
+                                    <Receipt size={18} /> View Bill Summary
+                                </button>
+                                <button onClick={resetPlanner} className="submit-form-btn reset-btn">
+                                    <Zap size={18} /> Plan Another Trip
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
+
+                {/* Bill Modal */}
+                {showBill && (
+                    <div className="modal-overlay" onClick={() => setShowBill(false)}>
+                        <div className="modal-content bill-modal" onClick={e => e.stopPropagation()}>
+                            <button className="close-btn" onClick={() => setShowBill(false)}><X size={24} /></button>
+                            <div className="bill-header">
+                                <div className="logo-container">
+                                    <div className="logo-icon"><MapPin size={20} /></div>
+                                    <span className="logo-text">TOUR<span>IFY</span></span>
+                                </div>
+                                <div className="bill-meta">
+                                    <h3>Trip Invoice</h3>
+                                    <p>Date: {new Date().toLocaleDateString()}</p>
+                                    <p>Invoice #: INV-{Math.random().toString(36).substring(7).toUpperCase()}</p>
+                                </div>
+                            </div>
+
+                            <div className="bill-details">
+                                <div className="bill-row">
+                                    <span>Destination</span>
+                                    <strong>{generatedPlan.destination}</strong>
+                                </div>
+                                <div className="bill-row">
+                                    <span>Duration</span>
+                                    <strong>{generatedPlan.itinerary.length} Days</strong>
+                                </div>
+                                <div className="bill-row">
+                                    <span>Travel Dates</span>
+                                    <strong>{generatedPlan.dates}</strong>
+                                </div>
+                            </div>
+
+                            <div className="bill-items">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th className="text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {generatedPlan.itinerary.map((day, i) => (
+                                            <tr key={i}>
+                                                <td>Day {day.day}: {day.title}</td>
+                                                <td className="text-right">₹{day.cost.toLocaleString('en-IN')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>Subtotal</td>
+                                            <td className="text-right">₹{generatedPlan.totalCost.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>GST (18%)</td>
+                                            <td className="text-right">₹{generatedPlan.tax.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                        <tr className="grand-total">
+                                            <td>Grand Total</td>
+                                            <td className="text-right">₹{generatedPlan.grandTotal.toLocaleString('en-IN')}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div className="bill-footer">
+                                <button className="primary-btn" onClick={() => window.print()}>
+                                    <Download size={18} /> Download PDF
+                                </button>
+                                <p>Thank you for choosing sustainable travel with Tourify!</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Features Side */}
                 <div className="features-tabs">

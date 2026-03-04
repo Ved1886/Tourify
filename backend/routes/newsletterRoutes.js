@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
         if (!existing.empty) {
             return res.status(400).json({ message: 'You are already subscribed!' });
         }
-        await col.add({ email, createdAt: new Date().toISOString() });
+        await col.add({ email, subscribedAt: new Date().toISOString(), createdAt: new Date().toISOString() });
         res.status(201).json({ message: 'Subscribed successfully! Welcome to the Tribe.' });
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
@@ -22,6 +22,7 @@ router.get('/', async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// Delete by doc ID
 router.delete('/:id', async (req, res) => {
     try {
         await col.doc(req.params.id).delete();

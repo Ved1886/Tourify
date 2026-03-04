@@ -29,15 +29,15 @@ router.post('/', async (req, res) => {
         ]);
 
         await seedCollection('destinations', [
-            { name: 'Amazon Rainforest', country: 'Brazil', tag: 'Biodiversity Hotspot', rating: 4.9, price: '$1,299', gradient: 'linear-gradient(135deg, #0a5c36, #0de381)' },
-            { name: 'Mount Fuji', country: 'Japan', tag: 'Sacred Peak', rating: 4.8, price: '$899', gradient: 'linear-gradient(135deg, #1a1a4e, #6366f1)' },
-            { name: 'Banff National Park', country: 'Canada', tag: 'Alpine Wonder', rating: 4.9, price: '$1,099', gradient: 'linear-gradient(135deg, #0c4a6e, #22d3ee)' },
-            { name: 'Serengeti Plains', country: 'Tanzania', tag: 'Wildlife Safari', rating: 5.0, price: '$2,499', gradient: 'linear-gradient(135deg, #78350f, #f59e0b)' },
-            { name: 'Norwegian Fjords', country: 'Norway', tag: 'Arctic Escape', rating: 4.7, price: '$1,599', gradient: 'linear-gradient(135deg, #164e63, #67e8f9)' },
-            { name: 'Galápagos Islands', country: 'Ecuador', tag: 'Eco Paradise', rating: 4.9, price: '$3,199', gradient: 'linear-gradient(135deg, #065f46, #34d399)' },
-            { name: 'Swiss Alps', country: 'Switzerland', tag: 'Mountain Bliss', rating: 4.8, price: '$1,899', gradient: 'linear-gradient(135deg, #1e3a5f, #38bdf8)' },
-            { name: 'Great Barrier Reef', country: 'Australia', tag: 'Underwater World', rating: 4.9, price: '$2,199', gradient: 'linear-gradient(135deg, #0e4e73, #06b6d4)' },
-            { name: 'Patagonia', country: 'Argentina', tag: 'Wild Frontier', rating: 4.8, price: '$1,799', gradient: 'linear-gradient(135deg, #3b0764, #a855f7)' }
+            { name: 'Amazon Rainforest', country: 'Brazil', tag: 'Biodiversity Hotspot', rating: 4.9, price: '₹1,07,000', gradient: 'linear-gradient(135deg, #0a5c36, #0de381)' },
+            { name: 'Mount Fuji', country: 'Japan', tag: 'Sacred Peak', rating: 4.8, price: '₹74,500', gradient: 'linear-gradient(135deg, #1a1a4e, #6366f1)' },
+            { name: 'Banff National Park', country: 'Canada', tag: 'Alpine Wonder', rating: 4.9, price: '₹91,000', gradient: 'linear-gradient(135deg, #0c4a6e, #22d3ee)' },
+            { name: 'Serengeti Plains', country: 'Tanzania', tag: 'Wildlife Safari', rating: 5.0, price: '₹2,07,000', gradient: 'linear-gradient(135deg, #78350f, #f59e0b)' },
+            { name: 'Norwegian Fjords', country: 'Norway', tag: 'Arctic Escape', rating: 4.7, price: '₹1,32,000', gradient: 'linear-gradient(135deg, #164e63, #67e8f9)' },
+            { name: 'Galápagos Islands', country: 'Ecuador', tag: 'Eco Paradise', rating: 4.9, price: '₹2,65,000', gradient: 'linear-gradient(135deg, #065f46, #34d399)' },
+            { name: 'Swiss Alps', country: 'Switzerland', tag: 'Mountain Bliss', rating: 4.8, price: '₹1,57,000', gradient: 'linear-gradient(135deg, #1e3a5f, #38bdf8)' },
+            { name: 'Great Barrier Reef', country: 'Australia', tag: 'Underwater World', rating: 4.9, price: '₹1,82,000', gradient: 'linear-gradient(135deg, #0e4e73, #06b6d4)' },
+            { name: 'Patagonia', country: 'Argentina', tag: 'Wild Frontier', rating: 4.8, price: '₹1,49,000', gradient: 'linear-gradient(135deg, #3b0764, #a855f7)' }
         ]);
 
         await seedCollection('sanctuaries', [

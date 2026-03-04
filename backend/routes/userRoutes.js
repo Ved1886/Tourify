@@ -123,4 +123,34 @@ router.post('/register-admin', async (req, res) => {
     } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// List all users (admin)
+router.get('/', async (req, res) => {
+    try {
+        const snap = await usersRef.orderBy('createdAt', 'desc').get();
+        const users = snap.docs.map(d => {
+            const data = d.data();
+            return { _id: d.id, name: data.name, email: data.email, role: data.role, createdAt: data.createdAt };
+        });
+        res.json(users);
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Update user role (admin)
+router.put('/:id/role', async (req, res) => {
+    const { role } = req.body;
+    try {
+        await usersRef.doc(req.params.id).update({ role });
+        res.json({ message: `User role updated to ${role}` });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
+// Delete user (admin)
+router.delete('/:id', async (req, res) => {
+    try {
+        await usersRef.doc(req.params.id).delete();
+        res.json({ message: 'User deleted' });
+    } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 module.exports = router;
+
