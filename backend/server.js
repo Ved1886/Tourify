@@ -27,6 +27,8 @@ app.use('/api/sanctuaries', require('./routes/sanctuaryRoutes'));
 app.use('/api/alerts', require('./routes/alertRoutes'));
 app.use('/api/testimonials', require('./routes/testimonialRoutes'));
 app.use('/api/seed', require('./routes/seedRoutes'));
+app.use('/api/chat', require('./routes/chatRoutes'));
+
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Tourify API is running on Firebase' });

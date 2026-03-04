@@ -19,6 +19,7 @@ import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import UserDashboard from './pages/UserDashboard.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import Chatbot from './pages/Chatbot.jsx';
 
 function ProtectedRoute({ children, adminOnly = false }) {
     const { user, loading } = useAuth();
@@ -175,6 +176,7 @@ function App() {
                     </div>
                 </footer>
             )}
+            <Chatbot />
         </div>
     );
 }
