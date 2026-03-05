@@ -1,90 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Map, Loader, Users, MapPin, Search } from 'lucide-react';
+import { Map, Loader, Users, MapPin, Search, Compass, ExternalLink } from 'lucide-react';
 
 const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
-
-// Fix for Leaflet default icon issue in Vite/React
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
-
-// Basic lookup table for fast rendering of popular destinations
-// ... (rest of PREDEFINED_COORDS)
-const PREDEFINED_COORDS = {
-    'Amazon Rainforest': [-3.4653, -62.2159],
-    'Mount Fuji': [35.3606, 138.7274],
-    'Banff National Park': [51.4968, -115.9281],
-    'Serengeti Plains': [-2.3333, 34.8333],
-    'Norwegian Fjords': [61.0333, 6.2000],
-    'Galápagos Islands': [-0.6000, -90.5000],
-    'Swiss Alps': [46.5606, 8.5609],
-    'Great Barrier Reef': [-18.2871, 147.6992],
-    'Patagonia': [-50.0000, -73.0000],
-    'Jim Corbett': [29.5300, 78.7747],
-    'Sundarbans': [21.9497, 89.1833]
-};
-
-// Geocoding cache
-const geocodeCache = new Map();
-
-// Helper to get coordinates
-async function getCoordinates(locationName) {
-    if (PREDEFINED_COORDS[locationName]) return PREDEFINED_COORDS[locationName];
-    if (geocodeCache.has(locationName)) return geocodeCache.get(locationName);
-
-    try {
-        const res = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(locationName)}&limit=1`);
-        if (res.data && res.data.length > 0) {
-            const coords = [parseFloat(res.data[0].lat), parseFloat(res.data[0].lon)];
-            geocodeCache.set(locationName, coords);
-            return coords;
-        }
-    } catch (err) {
-        console.error("Geocoding failed for", locationName);
-    }
-    return null;
-}
-
-// Custom icons
-const tripIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
-
-const destIcon = new L.Icon({
-    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41]
-});
 
 export default function MapPage() {
     const [markers, setMarkers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
-        const fetchAndGeocode = async () => {
+        const fetchData = async () => {
             try {
-                // Fetch trips
                 const [tripsRes, destsRes] = await Promise.all([
                     axios.get(`${API}/trips`),
                     axios.get(`${API}/destinations`)
@@ -98,113 +25,101 @@ export default function MapPage() {
                     tripGroups[dest].push(t);
                 });
 
-                const loadedMarkers = [];
+                const allData = [
+                    ...destsRes.data.map(d => ({ ...d, type: 'destination' })),
+                    ...Object.keys(tripGroups).map(loc => ({
+                        name: loc,
+                        type: 'trip',
+                        count: tripGroups[loc].length,
+                        trips: tripGroups[loc],
+                        country: tripGroups[loc][0]?.country || 'Various'
+                    }))
+                ];
 
-                // Standard destinations
-                for (let d of destsRes.data) {
-                    const coords = await getCoordinates(d.name);
-                    if (coords) {
-                        loadedMarkers.push({
-                            id: `dest-${d._id}`,
-                            coords,
-                            type: 'destination',
-                            data: d
-                        });
-                    }
-                }
-
-                // Trips
-                for (let location of Object.keys(tripGroups)) {
-                    const coords = await getCoordinates(location);
-                    if (coords) {
-                        loadedMarkers.push({
-                            id: `trips-${location}`,
-                            coords: [coords[0] + (Math.random() * 0.01 - 0.005), coords[1] + (Math.random() * 0.01 - 0.005)], // Slight offset to not overlap perfectly
-                            type: 'trip',
-                            location,
-                            count: tripGroups[location].length,
-                            trips: tripGroups[location]
-                        });
-                    }
-                    // Wait a bit to respect Nominatim limits
-                    await new Promise(r => setTimeout(r, 200));
-                }
-
-                setMarkers(loadedMarkers);
+                setMarkers(allData);
             } catch (err) {
-                console.error("Map data fetch error:", err);
+                console.error("Data fetch error:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchAndGeocode();
+        fetchData();
     }, []);
 
+    const filtered = markers.filter(m =>
+        (m.name || '').toLowerCase().includes(search.toLowerCase()) ||
+        (m.country || '').toLowerCase().includes(search.toLowerCase())
+    );
+
     return (
-        <div className="page-container" style={{ padding: '0', height: 'calc(100vh - 70px)', display: 'flex', flexDirection: 'column' }}>
-            <div className="page-header" style={{ position: 'absolute', top: '100px', left: '50px', zIndex: 1000, background: 'rgba(10,15,13,0.85)', padding: '20px 30px', borderRadius: '20px', backdropFilter: 'blur(10px)', border: '1px solid var(--border-color)', maxWidth: '400px' }}>
-                <span className="section-badge"><Map size={14} /> EXPLORER MAP</span>
-                <h1 style={{ fontSize: '1.8rem' }}>Live <span className="gradient-text">Trail Map</span></h1>
-                <p style={{ fontSize: '0.9rem', marginBottom: '15px' }}>See where fellow Tourify explorers are heading around the world right now!</p>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}>
-                        <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png" style={{ width: 12 }} /> Traveler Pins
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem' }}>
-                        <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png" style={{ width: 12 }} /> Top Destinations
-                    </div>
-                </div>
+        <div className="page-container" style={{ minHeight: '100vh', paddingBottom: '50px' }}>
+            <div className="page-header">
+                <span className="section-badge"><Compass size={14} /> EXPLORER HUB</span>
+                <h1>Global <span className="gradient-text">Trail Activity</span></h1>
+                <p>Browse active trips and top destinations from the Tourify community.</p>
             </div>
 
-            {loading && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 1000, background: 'rgba(0,0,0,0.8)', padding: '30px', borderRadius: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
+            <div className="search-bar" style={{ marginBottom: '2rem' }}>
+                <Search size={20} />
+                <input
+                    type="text"
+                    placeholder="Search destinations or countries..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+
+            {loading ? (
+                <div className="loading-state">
                     <Loader className="spin" size={32} color="var(--accent-green)" />
-                    <p>Generating world map & locating travelers...</p>
+                    <p>Loading community activity...</p>
+                </div>
+            ) : (
+                <div className="wildlife-grid">
+                    {filtered.map((item, idx) => (
+                        <div key={idx} className="wildlife-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                            <div className="wildlife-indicator" style={{ background: item.type === 'destination' ? 'var(--accent-green)' : '#3b82f6' }}></div>
+                            <div className="wildlife-body">
+                                <div className="wildlife-top">
+                                    <h3>{item.name}</h3>
+                                    <span className="status-badge" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-secondary)' }}>
+                                        {item.type === 'destination' ? 'Top Rated' : 'Active Trail'}
+                                    </span>
+                                </div>
+                                <p className="wildlife-location"><MapPin size={14} /> {item.country}</p>
+
+                                {item.type === 'trip' ? (
+                                    <div style={{ marginTop: '15px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.9rem' }}>
+                                            <Users size={14} color="var(--accent-green)" />
+                                            <strong>{item.count} Travelers</strong> active here
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                                            {item.trips.slice(0, 3).map((t, i) => (
+                                                <span key={i} style={{ fontSize: '10px', padding: '4px 8px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                    {t.userName || 'Explorer'}
+                                                </span>
+                                            ))}
+                                            {item.count > 3 && <span style={{ fontSize: '10px', opacity: 0.5 }}>+ {item.count - 3} more</span>}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '10px', lineHeight: '1.5' }}>
+                                        {item.tag || 'Explore the wonders of nature in this premier destination.'}
+                                    </p>
+                                )}
+
+                                <div style={{ marginTop: '20px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <a href={`/planner?dest=${encodeURIComponent(item.name)}`}
+                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-green)', fontWeight: '600', textDecoration: 'none', fontSize: '0.9rem' }}>
+                                        Plan Trip to this location <ExternalLink size={14} />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             )}
-
-            <div style={{ flex: 1, width: '100%', borderRadius: '0', overflow: 'hidden' }}>
-                <MapContainer center={[20, 0]} zoom={3} style={{ height: '100%', width: '100%' }}>
-                    {/* Dark theme tiles */}
-                    <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        subdomains="abcd"
-                        maxZoom={19}
-                    />
-
-                    {markers.map(m => (
-                        <Marker key={m.id} position={m.coords} icon={m.type === 'trip' ? tripIcon : destIcon}>
-                            <Popup>
-                                <div style={{ color: '#000', padding: '5px' }}>
-                                    {m.type === 'destination' ? (
-                                        <>
-                                            <h3 style={{ margin: '0 0 5px', fontSize: '16px', fontWeight: 'bold' }}>{m.data.name}</h3>
-                                            <p style={{ margin: '0 0 5px', fontSize: '12px' }}>{m.data.country} • {m.data.tag}</p>
-                                            <a href={`/planner?dest=${encodeURIComponent(m.data.name)}`} style={{ color: '#059669', fontWeight: 'bold', textDecoration: 'none', fontSize: '12px' }}>Plan Trip →</a>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <h3 style={{ margin: '0 0 5px', fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                                <Users size={14} /> {m.count} Travelers
-                                            </h3>
-                                            <p style={{ margin: '0 0 5px', fontSize: '13px', fontWeight: '600' }}>📍 {m.location}</p>
-                                            <div style={{ maxHeight: '100px', overflowY: 'auto', borderTop: '1px solid #ccc', paddingTop: '5px', marginTop: '5px' }}>
-                                                {m.trips.slice(0, 3).map((t, i) => (
-                                                    <div key={i} style={{ fontSize: '11px', marginBottom: '3px', padding: '3px', background: '#f3f4f6', borderRadius: '4px' }}>
-                                                        <strong>{t.userName || 'Anonymous'}</strong> ({t.status})
-                                                    </div>
-                                                ))}
-                                                {m.trips.length > 3 && <div style={{ fontSize: '10px', color: '#666', marginTop: '2px' }}>+ {m.trips.length - 3} more</div>}
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </Popup>
-                        </Marker>
-                    ))}
-                </MapContainer>
-            </div>
         </div>
     );
 }
