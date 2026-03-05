@@ -41,8 +41,10 @@ Format:
             setResult({ destination, months: parsed });
         } catch (err) {
             console.error(err);
-            setError("Failed to predict. The AI might be overloaded, or couldn't recognize the destination. Please try again.");
-        } finally {
+            const msg = err.response?.data?.message || err.message || "The AI might be overloaded. Please try again.";
+            setError(`Prediction Failed: ${msg}`);
+        }
+        finally {
             setLoading(false);
         }
     };
