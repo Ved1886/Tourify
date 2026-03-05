@@ -2,14 +2,27 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import * as L from 'leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Map, Loader, Users, MapPin, Search } from 'lucide-react';
 
 const API = "https://tourify-hk66.onrender.com/api" || 'http://localhost:5000/api';
 
-// Removed require() patch because Vite does not support require(). All markers use custom icons.
+// Fix for Leaflet default icon issue in Vite/React
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+
+L.Marker.prototype.options.icon = DefaultIcon;
 
 // Basic lookup table for fast rendering of popular destinations
+// ... (rest of PREDEFINED_COORDS)
 const PREDEFINED_COORDS = {
     'Amazon Rainforest': [-3.4653, -62.2159],
     'Mount Fuji': [35.3606, 138.7274],
@@ -45,33 +58,24 @@ async function getCoordinates(locationName) {
     return null;
 }
 
-// Custom icons (initialized lazily to prevent SSR or module load crashes)
-let tripIcon = null;
-let destIcon = null;
+// Custom icons
+const tripIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
 
-const initializeIcons = () => {
-    if (!L || !L.Icon) return;
-    if (!tripIcon) {
-        tripIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-    }
-    if (!destIcon) {
-        destIcon = new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-    }
-};
+const destIcon = new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
 
 export default function MapPage() {
     const [markers, setMarkers] = useState([]);
@@ -79,7 +83,6 @@ export default function MapPage() {
 
     useEffect(() => {
         const fetchAndGeocode = async () => {
-            initializeIcons();
             try {
                 // Fetch trips
                 const [tripsRes, destsRes] = await Promise.all([
